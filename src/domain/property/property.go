@@ -15,12 +15,14 @@ type Property struct {
 	ComplexName    string `json:"complex_name"`
 	Description    string `json:"description"`
 	Title          string `json:"title"`
-	FloorNumber    int64  `json:"floor_nummber"`
-	BuildingNumber int64  `json:"building_number"`
+	FlatNo         string `json:"flat_no"`
+	FloorNumber    int64  `json:"floor_number"`
+	BuildingNumber string `json:"building_number"`
 	DirectionFace  string `json:"direction_face"`
 	PropertyType   string `json:"property_type"`
 	BuiltYear      int64  `json:"built_year"`
 	Price          int64  `json:"price"`
+	Currency       string `json:"currency"`
 	Rooms          int64  `json:"rooms"`
 	Bathrooms      int64  `json:"bathrooms"`
 	Bedrooms       int64  `json:"bedrooms"`
@@ -37,23 +39,33 @@ type Property struct {
 	Area         float64 `json:"area"`
 
 	Location    string      `json:"location"`
+	Country     string      `json:"country"`
 	City        string      `json:"city"`
 	GPS         coordinates `json:"gps"`
 	NearSchools []school    `json:"near_schools"`
 
-	Visuals []Visual `json:"visuals"`
+	Visuals     []Visual `json:"visuals"`
+	Videos      []Video  `json:"videos"`
+	PropertyPic string   `json:"property_pic"`
 
 	ForRent     bool   `json:"for_rent"`
-	PropertyNo  int64  `json:"property_no"`
+	PropertyNo  string `json:"property_no"`
 	Viewers     int64  `json:"Viewers"`
 	Status      string `json:"status"`
 	DateCreated string `json:"date_created"`
 	IsSold      bool   `json:"is_sold"`
+	IsApartment bool   `json:"is_apartment"`
 	SoldDate    string `json:"sold_date"`
 }
 
 type Visual struct {
-	Url string `json:"url"`
+	Url      string `json:"url"`
+	FileType string `json:"file_type"`
+}
+
+type Video struct {
+	Url      string `json:"url"`
+	FileType string `json:"file_type"`
 }
 
 type school struct {

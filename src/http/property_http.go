@@ -117,7 +117,7 @@ func (ph *propertyHandler) GetByID(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusFound, property)
+	c.JSON(http.StatusOK, property)
 }
 
 func (ph *propertyHandler) Search(c *gin.Context) {
@@ -135,7 +135,7 @@ func (ph *propertyHandler) Search(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusFound, properties)
+	c.JSON(http.StatusOK, properties)
 }
 
 func (ph *propertyHandler) DeleteMedia(c *gin.Context) {

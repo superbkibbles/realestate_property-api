@@ -23,7 +23,7 @@ type DbRepository interface {
 	GetByID(string) (*property.Property, rest_errors.RestErr)
 	Search(query query.EsQuery) (property.Properties, rest_errors.RestErr)
 	Update(id string, updateRequest property.EsUpdate) (*property.Property, rest_errors.RestErr)
-	UploadMedia(visuals []property.Visual, propertyID string) rest_errors.RestErr
+	UploadMedia(visuals []property.Visual, videos []property.Video, propertyID string) rest_errors.RestErr
 }
 
 type dbRepository struct {
@@ -33,13 +33,18 @@ func NewRepository() DbRepository {
 	return &dbRepository{}
 }
 
-func (db *dbRepository) UploadMedia(visuals []property.Visual, propertyID string) rest_errors.RestErr {
+func (db *dbRepository) UploadMedia(visuals []property.Visual, videos []property.Video, propertyID string) rest_errors.RestErr {
 	var esUpdate property.EsUpdate
 	updated := property.UpdatePropertyRequest{
 		Field: "visuals",
 		Value: visuals,
 	}
+	videosUpdate := property.UpdatePropertyRequest{
+		Field: "videos",
+		Value: videos,
+	}
 	esUpdate.Fields = append(esUpdate.Fields, updated)
+	esUpdate.Fields = append(esUpdate.Fields, videosUpdate)
 	_, err := db.Update(propertyID, esUpdate)
 	if err != nil {
 		return err
@@ -82,6 +87,9 @@ func (db *dbRepository) Create(property property.Property) (*property.Property, 
 func (db *dbRepository) Get() (property.Properties, rest_errors.RestErr) {
 	result, err := elasticsearch.Client.Get(indexProperties)
 	if err != nil {
+		if strings.Contains(err.Error(), "404") {
+			return nil, rest_errors.NewNotFoundErr("no Property was found with")
+		}
 		return nil, rest_errors.NewInternalServerErr("error when trying to Get all Properties", errors.New("databse error"))
 	}
 

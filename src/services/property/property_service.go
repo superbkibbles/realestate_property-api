@@ -69,6 +69,7 @@ func (s *service) UploadMedia(files []*multipart.FileHeader, propertyID string) 
 		return err
 	}
 	visuals := p.Visuals
+	videos := p.Videos
 	for _, file := range files {
 		f, err := file.Open()
 		if err != nil {
@@ -76,15 +77,23 @@ func (s *service) UploadMedia(files []*multipart.FileHeader, propertyID string) 
 		}
 		defer f.Close()
 		var visual property.Visual
-		v, fileErr := file_utils.SaveFile(file, f, propertyID)
-		visual.Url = v
+		var video property.Video
+		v, ext, fileErr := file_utils.SaveFile(file, f, propertyID)
 		if fileErr != nil {
 			return fileErr
 		}
-		visuals = append(visuals, visual)
+		if ext == "mp4" || ext == "mov" {
+			video.Url = "http://localhost:3030/assets/" + p.ID + "/" + v
+			video.FileType = ext
+			videos = append(videos, video)
+		} else {
+			visual.Url = "http://localhost:3030/assets/" + p.ID + "/" + v
+			visual.FileType = ext
+			visuals = append(visuals, visual)
+		}
 	}
 
-	return s.dbRepo.UploadMedia(visuals, propertyID)
+	return s.dbRepo.UploadMedia(visuals, videos, propertyID)
 	// LOGIC
 	// some saved
 	// first one throwed error the others will not be uploaded
@@ -99,13 +108,21 @@ func (s *service) DeleteMedia(propertyID string, mediaID string) rest_errors.Res
 	file_utils.DeleteFile(mediaID, propertyID)
 
 	var visuals []property.Visual
+	var videos []property.Video
 
 	for _, v := range p.Visuals {
-		if v.Url == mediaID {
+		if v.Url == "http://localhost:3030/assets/"+p.ID+"/"+mediaID {
 			continue
 		}
 		visuals = append(visuals, v)
 	}
 
-	return s.dbRepo.UploadMedia(visuals, propertyID)
+	for _, v := range p.Videos {
+		if v.Url == "http://localhost:3030/assets/"+p.ID+"/"+mediaID {
+			continue
+		}
+		videos = append(videos, v)
+	}
+
+	return s.dbRepo.UploadMedia(visuals, videos, propertyID)
 }
