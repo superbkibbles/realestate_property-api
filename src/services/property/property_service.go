@@ -19,6 +19,7 @@ type Service interface {
 	Update(id string, updateRequest property.EsUpdate) (*property.Property, rest_errors.RestErr)
 	UploadMedia(files []*multipart.FileHeader, propertyID string) rest_errors.RestErr
 	DeleteMedia(propertyID string, mediaID string) rest_errors.RestErr
+	UploadProperyPic(id string, fileHeader *multipart.FileHeader) (*property.Property, rest_errors.RestErr)
 }
 
 type service struct {
@@ -125,4 +126,36 @@ func (s *service) DeleteMedia(propertyID string, mediaID string) rest_errors.Res
 	}
 
 	return s.dbRepo.UploadMedia(visuals, videos, propertyID)
+}
+
+func (srv *service) UploadProperyPic(propertyID string, fileHeader *multipart.FileHeader) (*property.Property, rest_errors.RestErr) {
+	p, err := srv.GetByID(propertyID)
+	if err != nil {
+		return nil, err
+	}
+	if p.PropertyPic != "" {
+		file_utils.DeleteFile(p.PropertyPic, propertyID)
+		p.PropertyPic = ""
+	}
+	file, fErr := fileHeader.Open()
+	if fErr != nil {
+		return nil, rest_errors.NewInternalServerErr("Error while trying to open the file", nil)
+	}
+	filePath, _, fileErr := file_utils.SaveFile(fileHeader, file, propertyID)
+	if fileErr != nil {
+		return nil, fileErr
+	}
+	p.PropertyPic = "http://localhost:3030/assets/" + p.ID + "/" + filePath
+
+	var es property.EsUpdate
+	update := property.UpdatePropertyRequest{
+		Field: "property_pic",
+		Value: p.PropertyPic,
+	}
+
+	es.Fields = append(es.Fields, update)
+
+	srv.dbRepo.Update(propertyID, es)
+
+	return p, nil
 }

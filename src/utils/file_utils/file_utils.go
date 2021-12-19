@@ -14,11 +14,10 @@ import (
 	"github.com/superbkibbles/realestate_property-api/src/utils/crypto_utils"
 )
 
-// Save
-// If user not saved
 // Delete Pic
-
 func DeleteFile(fileName string, propertyId string) {
+	splitted := strings.Split(fileName, "/")
+	fileName = splitted[len(splitted)-1]
 	os.Remove(filepath.Join("clients/visuals/"+propertyId, filepath.Base(fileName)))
 }
 

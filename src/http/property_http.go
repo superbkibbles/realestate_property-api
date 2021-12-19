@@ -20,6 +20,7 @@ type Propertyhandler interface {
 	Update(*gin.Context)
 	UploadMedia(*gin.Context)
 	DeleteMedia(*gin.Context)
+	UploadPropertyPic(c *gin.Context)
 }
 
 type propertyHandler struct {
@@ -147,4 +148,24 @@ func (ph *propertyHandler) DeleteMedia(c *gin.Context) {
 	}
 
 	c.String(http.StatusOK, "Deleted")
+}
+
+func (ph *propertyHandler) UploadPropertyPic(c *gin.Context) {
+	agencyID := strings.TrimSpace(c.Param("id"))
+
+	file, err := c.FormFile("property_pic")
+	if err != nil {
+		logger.Info(err.Error())
+		restErr := rest_errors.NewBadRequestErr("Bad Request")
+		c.JSON(restErr.Status(), restErr)
+		return
+	}
+
+	p, uploadErr := ph.service.UploadProperyPic(agencyID, file)
+	if err != nil {
+		c.JSON(uploadErr.Status(), uploadErr)
+		return
+	}
+
+	c.JSON(http.StatusOK, p)
 }
