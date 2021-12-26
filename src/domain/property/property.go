@@ -32,6 +32,8 @@ type Property struct {
 	Kitchen        int64  `json:"kitchen"`
 	PropertyKind   string `json:"property_kind"`
 
+	Category string `json:"category"`
+
 	Promoted bool `json:"promoted"`
 
 	Space        float64 `json:"space"`
@@ -48,14 +50,15 @@ type Property struct {
 	Videos      []Video  `json:"videos"`
 	PropertyPic string   `json:"property_pic"`
 
-	ForRent     bool   `json:"for_rent"`
-	PropertyNo  string `json:"property_no"`
-	Viewers     int64  `json:"Viewers"`
-	Status      string `json:"status"`
-	DateCreated string `json:"date_created"`
-	IsSold      bool   `json:"is_sold"`
-	IsApartment bool   `json:"is_apartment"`
-	SoldDate    string `json:"sold_date"`
+	ForRent      bool   `json:"for_rent"`
+	PropertyNo   string `json:"property_no"`
+	Viewers      int64  `json:"Viewers"`
+	Status       string `json:"status"`
+	DateCreated  string `json:"date_created"`
+	IsSold       bool   `json:"is_sold"`
+	IsNew        bool   `json:"is_new"`
+	IsCommercial bool   `json:"is_commercial"`
+	SoldDate     string `json:"sold_date"`
 }
 
 type Visual struct {
@@ -80,6 +83,9 @@ type coordinates struct {
 type Properties []Property
 
 func (p *Property) Validate() rest_errors.RestErr {
+	if p.Category != "apartment" && p.Category != "house" && p.Category != "villa" && p.Category != "land" && p.Category != "farm" {
+		return rest_errors.NewBadRequestErr("invalid JSON BODY category")
+	}
 	return nil
 }
 

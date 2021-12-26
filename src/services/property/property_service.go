@@ -34,6 +34,9 @@ func NewService(dbRepo db.DbRepository) Service {
 }
 
 func (s *service) Update(id string, updateRequest property.EsUpdate) (*property.Property, rest_errors.RestErr) {
+	if err := updateRequest.Validate(); err != nil {
+		return nil, err
+	}
 	return s.dbRepo.Update(id, updateRequest)
 }
 
