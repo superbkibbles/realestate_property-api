@@ -1,4 +1,4 @@
-module github.com/superbkibbles/realestate_property-api
+module github.com/superbkibbles/realestate_property-api/src
 
 go 1.16
 
