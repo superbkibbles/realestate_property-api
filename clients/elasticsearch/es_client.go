@@ -7,7 +7,7 @@ import (
 
 	elastic "github.com/olivere/elastic/v7"
 	"github.com/superbkibbles/bookstore_utils-go/logger"
-	"github.com/superbkibbles/realestate_property-api/src/domain/property"
+	"github.com/superbkibbles/realestate_property-api/domain/property"
 )
 
 var (

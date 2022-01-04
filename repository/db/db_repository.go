@@ -7,9 +7,9 @@ import (
 	"strings"
 
 	"github.com/superbkibbles/bookstore_utils-go/rest_errors"
-	"github.com/superbkibbles/realestate_property-api/src/clients/elasticsearch"
-	"github.com/superbkibbles/realestate_property-api/src/domain/property"
-	"github.com/superbkibbles/realestate_property-api/src/domain/query"
+	"github.com/superbkibbles/realestate_property-api/clients/elasticsearch"
+	"github.com/superbkibbles/realestate_property-api/domain/property"
+	"github.com/superbkibbles/realestate_property-api/domain/query"
 )
 
 const (

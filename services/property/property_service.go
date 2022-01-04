@@ -4,11 +4,11 @@ import (
 	"mime/multipart"
 
 	"github.com/superbkibbles/bookstore_utils-go/rest_errors"
-	"github.com/superbkibbles/realestate_property-api/src/domain/property"
-	"github.com/superbkibbles/realestate_property-api/src/domain/query"
-	"github.com/superbkibbles/realestate_property-api/src/repository/db"
-	"github.com/superbkibbles/realestate_property-api/src/utils/date_utils"
-	"github.com/superbkibbles/realestate_property-api/src/utils/file_utils"
+	"github.com/superbkibbles/realestate_property-api/domain/property"
+	"github.com/superbkibbles/realestate_property-api/domain/query"
+	"github.com/superbkibbles/realestate_property-api/repository/db"
+	"github.com/superbkibbles/realestate_property-api/utils/date_utils"
+	"github.com/superbkibbles/realestate_property-api/utils/file_utils"
 )
 
 type Service interface {

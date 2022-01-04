@@ -7,9 +7,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/superbkibbles/bookstore_utils-go/logger"
 	"github.com/superbkibbles/bookstore_utils-go/rest_errors"
-	domainProperty "github.com/superbkibbles/realestate_property-api/src/domain/property"
-	"github.com/superbkibbles/realestate_property-api/src/domain/query"
-	"github.com/superbkibbles/realestate_property-api/src/services/property"
+	domainProperty "github.com/superbkibbles/realestate_property-api/domain/property"
+	"github.com/superbkibbles/realestate_property-api/domain/query"
+	"github.com/superbkibbles/realestate_property-api/services/property"
 )
 
 type Propertyhandler interface {

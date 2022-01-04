@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/superbkibbles/bookstore_utils-go/rest_errors"
-	"github.com/superbkibbles/realestate_property-api/src/utils/crypto_utils"
+	"github.com/superbkibbles/realestate_property-api/utils/crypto_utils"
 )
 
 // Delete Pic
