@@ -63,13 +63,14 @@ func (db *dbRepository) Update(id string, updateRequest property.EsUpdate) (*pro
 
 	var property property.Property
 
-	bytes, err := result.GetResult.Source.MarshalJSON()
-	if err != nil {
-		return nil, rest_errors.NewInternalServerErr(fmt.Sprintf("error when trying to parse database response"), errors.New("database error"))
-	}
-	if err := json.Unmarshal(bytes, &property); err != nil {
-		return nil, rest_errors.NewInternalServerErr(fmt.Sprintf("error when trying to parse database response"), errors.New("database error"))
-	}
+	bytes, _ := result.GetResult.Source.MarshalJSON()
+	// if err != nil {
+	// 	return nil, rest_errors.NewInternalServerErr(fmt.Sprintf("error when trying to parse database response"), errors.New("database error"))
+	// }
+	// if err := json.Unmarshal(bytes, &property); err != nil {
+	// 	return nil, rest_errors.NewInternalServerErr(fmt.Sprintf("error when trying to parse database response"), errors.New("database error"))
+	// }
+	json.Unmarshal(bytes, &property)
 
 	property.ID = result.Id
 	return &property, nil
@@ -97,9 +98,10 @@ func (db *dbRepository) Get() (property.Properties, rest_errors.RestErr) {
 	for i, hit := range result.Hits.Hits {
 		bytes, _ := hit.Source.MarshalJSON()
 		var property property.Property
-		if err := json.Unmarshal(bytes, &property); err != nil {
-			return nil, rest_errors.NewInternalServerErr("error when trying to parse response", errors.New("database error"))
-		}
+		// if err := json.Unmarshal(bytes, &property); err != nil {
+		// 	return nil, rest_errors.NewInternalServerErr("error when trying to parse response", errors.New("database error"))
+		// }
+		json.Unmarshal(bytes, &property)
 		property.ID = hit.Id
 		properties[i] = property
 	}
@@ -120,13 +122,14 @@ func (db *dbRepository) GetByID(id string) (*property.Property, rest_errors.Rest
 		}
 		return nil, rest_errors.NewInternalServerErr(fmt.Sprintf("error when trying to id %s", id), errors.New("database error"))
 	}
-	bytes, err := result.Source.MarshalJSON()
-	if err != nil {
-		return nil, rest_errors.NewInternalServerErr(fmt.Sprintf("error when trying to parse database response"), errors.New("database error"))
-	}
-	if err := json.Unmarshal(bytes, &property); err != nil {
-		return nil, rest_errors.NewInternalServerErr(fmt.Sprintf("error when trying to parse database response"), errors.New("database error"))
-	}
+	bytes, _ := result.Source.MarshalJSON()
+	// if err != nil {
+	// 	return nil, rest_errors.NewInternalServerErr(fmt.Sprintf("error when trying to parse database response"), errors.New("database error"))
+	// }
+	// if err := json.Unmarshal(bytes, &property); err != nil {
+	// 	return nil, rest_errors.NewInternalServerErr(fmt.Sprintf("error when trying to parse database response"), errors.New("database error"))
+	// }
+	json.Unmarshal(bytes, &property)
 	property.ID = result.Id
 
 	return &property, nil
@@ -142,9 +145,10 @@ func (db *dbRepository) Search(query query.EsQuery) (property.Properties, rest_e
 	for i, hit := range result.Hits.Hits {
 		bytes, _ := hit.Source.MarshalJSON()
 		var property property.Property
-		if err := json.Unmarshal(bytes, &property); err != nil {
-			return nil, rest_errors.NewInternalServerErr("error when trying to parse response", errors.New("database error"))
-		}
+		// if err := json.Unmarshal(bytes, &property); err != nil {
+		// 	return nil, rest_errors.NewInternalServerErr("error when trying to parse response", errors.New("database error"))
+		// }
+		json.Unmarshal(bytes, &property)
 		property.ID = hit.Id
 		properties[i] = property
 	}

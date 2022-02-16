@@ -2,8 +2,10 @@ package property
 
 import (
 	"mime/multipart"
+	"os"
 
 	"github.com/superbkibbles/bookstore_utils-go/rest_errors"
+	"github.com/superbkibbles/realestate_property-api/constants"
 	"github.com/superbkibbles/realestate_property-api/domain/property"
 	"github.com/superbkibbles/realestate_property-api/domain/query"
 	"github.com/superbkibbles/realestate_property-api/repository/db"
@@ -87,11 +89,11 @@ func (s *service) UploadMedia(files []*multipart.FileHeader, propertyID string) 
 			return fileErr
 		}
 		if ext == "mp4" || ext == "mov" {
-			video.Url = "http://localhost:3030/assets/" + p.ID + "/" + v
+			video.Url = os.Getenv(constants.PUBLIC_API_KEY) + "assets/" + p.ID + "/" + v
 			video.FileType = ext
 			videos = append(videos, video)
 		} else {
-			visual.Url = "http://localhost:3030/assets/" + p.ID + "/" + v
+			visual.Url = os.Getenv(constants.PUBLIC_API_KEY) + "assets/" + p.ID + "/" + v
 			visual.FileType = ext
 			visuals = append(visuals, visual)
 		}
@@ -115,14 +117,14 @@ func (s *service) DeleteMedia(propertyID string, mediaID string) rest_errors.Res
 	var videos []property.Video
 
 	for _, v := range p.Visuals {
-		if v.Url == "http://localhost:3030/assets/"+p.ID+"/"+mediaID {
+		if v.Url == os.Getenv(constants.PUBLIC_API_KEY)+"assets/"+p.ID+"/"+mediaID {
 			continue
 		}
 		visuals = append(visuals, v)
 	}
 
 	for _, v := range p.Videos {
-		if v.Url == "http://localhost:3030/assets/"+p.ID+"/"+mediaID {
+		if v.Url == os.Getenv(constants.PUBLIC_API_KEY)+"assets/"+p.ID+"/"+mediaID {
 			continue
 		}
 		videos = append(videos, v)
@@ -148,7 +150,7 @@ func (srv *service) UploadProperyPic(propertyID string, fileHeader *multipart.Fi
 	if fileErr != nil {
 		return nil, fileErr
 	}
-	p.PropertyPic = "http://localhost:3030/assets/" + p.ID + "/" + filePath
+	p.PropertyPic = os.Getenv(constants.PUBLIC_API_KEY) + "assets/" + p.ID + "/" + filePath
 
 	var es property.EsUpdate
 	update := property.UpdatePropertyRequest{
