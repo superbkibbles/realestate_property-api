@@ -3,10 +3,12 @@ package elasticsearch
 import (
 	"context"
 	"fmt"
+	"os"
 	"time"
 
 	elastic "github.com/olivere/elastic/v7"
 	"github.com/superbkibbles/bookstore_utils-go/logger"
+	"github.com/superbkibbles/realestate_property-api/constants"
 	"github.com/superbkibbles/realestate_property-api/domain/property"
 )
 
@@ -35,7 +37,7 @@ func (c *esClient) setClient(client *elastic.Client) {
 func (c *esClient) Init() {
 	log := logger.Getlogger()
 	client, err := elastic.NewClient(
-		elastic.SetURL("http://127.0.0.1:9200"),
+		elastic.SetURL(os.Getenv(constants.ELASTIC_URL)),
 		elastic.SetHealthcheckInterval(10*time.Second),
 		elastic.SetErrorLog(log),
 		elastic.SetInfoLog(log),
