@@ -1,6 +1,8 @@
 package query
 
-import "github.com/olivere/elastic/v7"
+import (
+	"github.com/olivere/elastic/v7"
+)
 
 func (q *EsQuery) Build() elastic.Query {
 	query := elastic.NewBoolQuery()
@@ -17,6 +19,6 @@ func (q *EsQuery) Build() elastic.Query {
 		query.Filter(elastic.NewRangeQuery(fRange.Field).From(fRange.From).To(fRange.To))
 	}
 
-	query.Must(equalsQuery...)
+	query.Should(equalsQuery...)
 	return query
 }

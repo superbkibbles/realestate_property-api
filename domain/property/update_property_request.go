@@ -14,7 +14,7 @@ type UpdatePropertyRequest struct {
 func (u EsUpdate) Validate() rest_errors.RestErr {
 	for _, field := range u.Fields {
 		switch field.Field {
-		case "category":
+		case "category":	
 			switch field.Value {
 			case "apartment", "house", "villa", "land", "farm":
 				return nil

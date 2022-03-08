@@ -15,13 +15,16 @@ import (
 
 type Service interface {
 	Create(property.Property) (*property.Property, rest_errors.RestErr)
-	Get() (property.Properties, rest_errors.RestErr)
-	GetByID(string) (*property.Property, rest_errors.RestErr)
-	Search(query query.EsQuery) (property.Properties, rest_errors.RestErr)
+	Get(sort string, asc bool, local string) (property.Properties, rest_errors.RestErr)
+	GetByID(string, local string) (*property.Property, rest_errors.RestErr)
+	Search(query query.EsQuery, sort string, asc bool, local string) (property.Properties, rest_errors.RestErr)
 	Update(id string, updateRequest property.EsUpdate) (*property.Property, rest_errors.RestErr)
 	UploadMedia(files []*multipart.FileHeader, propertyID string) rest_errors.RestErr
 	DeleteMedia(propertyID string, mediaID string) rest_errors.RestErr
 	UploadProperyPic(id string, fileHeader *multipart.FileHeader) (*property.Property, rest_errors.RestErr)
+	GetActive(sort string, asc bool, local string) (property.Properties, rest_errors.RestErr)
+	GetDeactive(sort string, asc bool, local string) (property.Properties, rest_errors.RestErr)
+	Translate(id string, translateProperty property.TranslateProperty, local string) (*property.Property, rest_errors.RestErr)
 }
 
 type service struct {
@@ -42,6 +45,37 @@ func (s *service) Update(id string, updateRequest property.EsUpdate) (*property.
 	return s.dbRepo.Update(id, updateRequest)
 }
 
+func (s *service) Translate(id string, translateProperty property.TranslateProperty, local string) (*property.Property, rest_errors.RestErr) {
+	translateProperty.Local = local
+	translateProperty.PropertyID = id
+	if err := translateProperty.Validate(); err != nil {
+		return nil, err
+	}
+	p, err := s.dbRepo.GetByID(id)
+	if err != nil {
+		return nil, err
+	}
+	ts, err := s.dbRepo.GetTranslateById(id, local)
+	if err != nil {
+		return nil, err
+	}
+	if ts.PropertyID != "" {
+		// Update The property if there is record
+		tpp, err := s.dbRepo.UpdateTranslate(ts.ID, translateProperty)
+		if err != nil {
+			return nil, err
+		}
+		return tpp.Marshal(p), nil
+	}
+
+	// Insert If there is no record
+	if err := s.dbRepo.Translate(translateProperty); err != nil {
+		return nil, err
+	}
+
+	return translateProperty.Marshal(p), nil
+}
+
 func (s *service) Create(p property.Property) (*property.Property, rest_errors.RestErr) {
 	if err := p.Validate(); err != nil {
 		return nil, err
@@ -57,16 +91,86 @@ func (s *service) Create(p property.Property) (*property.Property, rest_errors.R
 	return newProperty, nil
 }
 
-func (s *service) Get() (property.Properties, rest_errors.RestErr) {
-	return s.dbRepo.Get()
+func (s *service) Get(sort string, asc bool, local string) (property.Properties, rest_errors.RestErr) {
+	properties, err := s.dbRepo.Get(sort, asc)
+	if err != nil {
+		return nil, err
+	}
+	if local == "en" || local == "" {
+		return properties, nil
+	}
+
+	ts, err := s.dbRepo.GetAllTranslated(local)
+	if err != nil {
+		return nil, err
+	}
+
+	return ts.Marshal(properties), nil
 }
 
-func (s *service) GetByID(id string) (*property.Property, rest_errors.RestErr) {
-	return s.dbRepo.GetByID(id)
+func (s *service) GetActive(sort string, asc bool, local string) (property.Properties, rest_errors.RestErr) {
+	properties, err := s.dbRepo.GetActive(sort, asc)
+	if err != nil {
+		return nil, err
+	}
+	if local == "en" || local == "" {
+		return properties, nil
+	}
+	ts, err := s.dbRepo.GetActiveLocal(local)
+	if err != nil {
+		return nil, err
+	}
+
+	return ts.Marshal(properties), nil
 }
 
-func (s *service) Search(query query.EsQuery) (property.Properties, rest_errors.RestErr) {
-	return s.dbRepo.Search(query)
+func (s *service) GetDeactive(sort string, asc bool, local string) (property.Properties, rest_errors.RestErr) {
+	properties, err := s.dbRepo.GetDeactive(sort, asc)
+	if err != nil {
+		return nil, err
+	}
+	if local == "en" || local == "" {
+		return properties, nil
+	}
+	ts, err := s.dbRepo.GetDeactiveLocal(local)
+	if err != nil {
+		return nil, err
+	}
+
+	return ts.Marshal(properties), nil
+}
+
+func (s *service) GetByID(id string, local string) (*property.Property, rest_errors.RestErr) {
+	p, err := s.dbRepo.GetByID(id)
+	if err != nil {
+		return nil, err
+	}
+	if local == "en" || local == "" {
+		return p, nil
+	}
+
+	tp, err := s.dbRepo.GetTranslateById(id, local)
+	if err != nil {
+		return nil, err
+	}
+	return tp.Marshal(p), nil
+}
+
+func (s *service) Search(query query.EsQuery, sort string, asc bool, local string) (property.Properties, rest_errors.RestErr) {
+	properties, err := s.dbRepo.Search(query, sort, asc)
+	if err != nil {
+		return nil, err
+	}
+
+	if local == "en" || local == "" {
+		return properties, nil
+	}
+	ts, err := s.dbRepo.GetDeactiveLocal(local)
+	if err != nil {
+		return nil, err
+	}
+
+	return ts.Marshal(properties), nil
 }
 
 func (s *service) UploadMedia(files []*multipart.FileHeader, propertyID string) rest_errors.RestErr {
@@ -106,7 +210,7 @@ func (s *service) UploadMedia(files []*multipart.FileHeader, propertyID string) 
 }
 
 func (s *service) DeleteMedia(propertyID string, mediaID string) rest_errors.RestErr {
-	p, err := s.GetByID(propertyID)
+	p, err := s.dbRepo.GetByID(propertyID)
 	if err != nil {
 		return err
 	}
@@ -134,7 +238,7 @@ func (s *service) DeleteMedia(propertyID string, mediaID string) rest_errors.Res
 }
 
 func (srv *service) UploadProperyPic(propertyID string, fileHeader *multipart.FileHeader) (*property.Property, rest_errors.RestErr) {
-	p, err := srv.GetByID(propertyID)
+	p, err := srv.dbRepo.GetByID(propertyID)
 	if err != nil {
 		return nil, err
 	}

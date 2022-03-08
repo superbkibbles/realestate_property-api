@@ -21,6 +21,9 @@ type Propertyhandler interface {
 	UploadMedia(*gin.Context)
 	DeleteMedia(*gin.Context)
 	UploadPropertyPic(c *gin.Context)
+	GetActive(*gin.Context)
+	GetDeactive(*gin.Context)
+	Translate(*gin.Context)
 }
 
 type propertyHandler struct {
@@ -75,6 +78,25 @@ func (ph *propertyHandler) Update(c *gin.Context) {
 	c.JSON(http.StatusOK, property)
 }
 
+func (ph *propertyHandler) Translate(c *gin.Context) {
+	local := c.GetHeader("local")
+	id := strings.TrimSpace(c.Param("id"))
+	var translateProperty domainProperty.TranslateProperty
+
+	if err := c.ShouldBindJSON(&translateProperty); err != nil {
+		restErr := rest_errors.NewBadRequestErr("Invalid Body JSON")
+		c.JSON(restErr.Status(), restErr)
+		return
+	}
+	property, err := ph.service.Translate(id, translateProperty, local)
+	if err != nil {
+		c.JSON(err.Status(), err)
+		return
+	}
+
+	c.JSON(http.StatusOK, property)
+}
+
 func (ph *propertyHandler) Create(c *gin.Context) {
 	var property domainProperty.Property
 	if err := c.ShouldBindJSON(&property); err != nil {
@@ -95,7 +117,10 @@ func (ph *propertyHandler) Create(c *gin.Context) {
 }
 
 func (ph *propertyHandler) Get(c *gin.Context) {
-	properties, err := ph.service.Get()
+	sort := c.Query("sort")
+	asc := c.Query("asc") == "true"
+	local := c.GetHeader("local")
+	properties, err := ph.service.Get(sort, asc, local)
 	if err != nil {
 		c.JSON(err.Status(), err)
 		return
@@ -104,15 +129,44 @@ func (ph *propertyHandler) Get(c *gin.Context) {
 	c.JSON(http.StatusOK, properties)
 }
 
+func (ph *propertyHandler) GetActive(c *gin.Context) {
+	sort := c.Query("sort")
+	asc := c.Query("asc") == "true"
+	local := c.GetHeader("local")
+
+	p, err := ph.service.GetActive(sort, asc, local)
+	if err != nil {
+		c.JSON(err.Status(), err)
+		return
+	}
+
+	c.JSON(http.StatusOK, p)
+}
+
+func (ph *propertyHandler) GetDeactive(c *gin.Context) {
+	sort := c.Query("sort")
+	asc := c.Query("asc") == "true"
+	local := c.GetHeader("local")
+
+	p, err := ph.service.GetDeactive(sort, asc, local)
+	if err != nil {
+		c.JSON(err.Status(), err)
+		return
+	}
+
+	c.JSON(http.StatusOK, p)
+}
+
 func (ph *propertyHandler) GetByID(c *gin.Context) {
 	id := strings.TrimSpace(c.Param("id"))
+	local := c.GetHeader("local")
 	if len(id) == 0 {
 		restErr := rest_errors.NewBadRequestErr("Invalid ID")
 		c.JSON(restErr.Status(), restErr)
 		return
 	}
 
-	property, err := ph.service.GetByID(id)
+	property, err := ph.service.GetByID(id, local)
 	if err != nil {
 		c.JSON(err.Status(), err)
 		return
@@ -123,6 +177,9 @@ func (ph *propertyHandler) GetByID(c *gin.Context) {
 
 func (ph *propertyHandler) Search(c *gin.Context) {
 	var q query.EsQuery
+	sort := c.Query("sort")
+	asc := c.Query("asc") == "true"
+	local := c.GetHeader("local")
 
 	if err := c.ShouldBindJSON(&q); err != nil {
 		restErr := rest_errors.NewBadRequestErr("Invalid Body JSON")
@@ -130,7 +187,7 @@ func (ph *propertyHandler) Search(c *gin.Context) {
 		return
 	}
 
-	properties, err := ph.service.Search(q)
+	properties, err := ph.service.Search(q, sort, asc, local)
 	if err != nil {
 		c.JSON(err.Status(), err)
 		return
@@ -138,7 +195,7 @@ func (ph *propertyHandler) Search(c *gin.Context) {
 
 	c.JSON(http.StatusOK, properties)
 }
-
+	
 func (ph *propertyHandler) DeleteMedia(c *gin.Context) {
 	propertyID := strings.TrimSpace(c.Param("id"))
 	mediaID := strings.TrimSpace(c.Param("media_id"))
