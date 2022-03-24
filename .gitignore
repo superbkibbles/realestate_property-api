@@ -16,3 +16,4 @@
 go.sum
 
 src/clients/visuals/
+.env
