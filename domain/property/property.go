@@ -64,11 +64,13 @@ type Property struct {
 type Visual struct {
 	Url      string `json:"url"`
 	FileType string `json:"file_type"`
+	PublicID string `json:"public_id"`
 }
 
 type Video struct {
 	Url      string `json:"url"`
 	FileType string `json:"file_type"`
+	PublicID string `json:"public_id"`
 }
 
 type school struct {
@@ -88,6 +90,3 @@ func (p *Property) Validate() rest_errors.RestErr {
 	}
 	return nil
 }
-
-// Create another struct to get the PIC or photo request
-// Get array of pics and photos

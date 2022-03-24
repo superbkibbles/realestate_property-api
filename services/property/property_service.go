@@ -2,13 +2,14 @@ package property
 
 import (
 	"mime/multipart"
-	"os"
 
+	"github.com/google/uuid"
 	"github.com/superbkibbles/bookstore_utils-go/rest_errors"
-	"github.com/superbkibbles/realestate_property-api/constants"
 	"github.com/superbkibbles/realestate_property-api/domain/property"
 	"github.com/superbkibbles/realestate_property-api/domain/query"
+	cloudstorage "github.com/superbkibbles/realestate_property-api/repository/cloudStorage"
 	"github.com/superbkibbles/realestate_property-api/repository/db"
+	"github.com/superbkibbles/realestate_property-api/utils/crypto_utils"
 	"github.com/superbkibbles/realestate_property-api/utils/date_utils"
 	"github.com/superbkibbles/realestate_property-api/utils/file_utils"
 )
@@ -28,13 +29,14 @@ type Service interface {
 }
 
 type service struct {
-	// Add Database Repository
-	dbRepo db.DbRepository
+	dbRepo    db.DbRepository
+	cloudRepo cloudstorage.CloudStorage
 }
 
-func NewService(dbRepo db.DbRepository) Service {
+func NewService(dbRepo db.DbRepository, cloudRepo cloudstorage.CloudStorage) Service {
 	return &service{
-		dbRepo: dbRepo,
+		dbRepo:    dbRepo,
+		cloudRepo: cloudRepo,
 	}
 }
 
@@ -188,25 +190,27 @@ func (s *service) UploadMedia(files []*multipart.FileHeader, propertyID string) 
 		defer f.Close()
 		var visual property.Visual
 		var video property.Video
-		v, ext, fileErr := file_utils.SaveFile(file, f, propertyID)
-		if fileErr != nil {
-			return fileErr
+		res, cloudErr := s.cloudRepo.Save(f, propertyID+crypto_utils.GetMd5(uuid.New().String()), p.ID)
+		v := res.Url
+		ext := res.Ext
+		publicID := res.PublicID
+		if err != nil {
+			return cloudErr
 		}
 		if ext == "mp4" || ext == "mov" {
-			video.Url = os.Getenv(constants.PUBLIC_API_KEY) + "assets/" + p.ID + "/" + v
+			video.Url = v
 			video.FileType = ext
+			video.PublicID = publicID
 			videos = append(videos, video)
 		} else {
-			visual.Url = os.Getenv(constants.PUBLIC_API_KEY) + "assets/" + p.ID + "/" + v
+			visual.Url = v
 			visual.FileType = ext
+			visual.PublicID = publicID
 			visuals = append(visuals, visual)
 		}
 	}
 
 	return s.dbRepo.UploadMedia(visuals, videos, propertyID)
-	// LOGIC
-	// some saved
-	// first one throwed error the others will not be uploaded
 }
 
 func (s *service) DeleteMedia(propertyID string, mediaID string) rest_errors.RestErr {
@@ -215,21 +219,29 @@ func (s *service) DeleteMedia(propertyID string, mediaID string) rest_errors.Res
 		return err
 	}
 
-	file_utils.DeleteFile(mediaID, propertyID)
-
 	var visuals []property.Visual
 	var videos []property.Video
 
 	for _, v := range p.Visuals {
-		if v.Url == os.Getenv(constants.PUBLIC_API_KEY)+"assets/"+p.ID+"/"+mediaID {
-			continue
+		if v.PublicID == mediaID {
+			if v.FileType != "mp4" && v.FileType != "mov" {
+				if err := s.cloudRepo.Delete(mediaID); err != nil {
+					return err
+				}
+				continue
+			}
 		}
 		visuals = append(visuals, v)
 	}
 
 	for _, v := range p.Videos {
-		if v.Url == os.Getenv(constants.PUBLIC_API_KEY)+"assets/"+p.ID+"/"+mediaID {
-			continue
+		if v.PublicID == mediaID {
+			if v.FileType == "mp4" || v.FileType == "mov" {
+				if err := s.cloudRepo.Delete(mediaID); err != nil {
+					return err
+				}
+				continue
+			}
 		}
 		videos = append(videos, v)
 	}
@@ -250,11 +262,12 @@ func (srv *service) UploadProperyPic(propertyID string, fileHeader *multipart.Fi
 	if fErr != nil {
 		return nil, rest_errors.NewInternalServerErr("Error while trying to open the file", nil)
 	}
-	filePath, _, fileErr := file_utils.SaveFile(fileHeader, file, propertyID)
-	if fileErr != nil {
-		return nil, fileErr
+	res, cloudErr := srv.cloudRepo.Save(file, propertyID+crypto_utils.GetMd5(uuid.New().String()), p.ID)
+	filePath := res.Url
+	if cloudErr != nil {
+		return nil, cloudErr
 	}
-	p.PropertyPic = os.Getenv(constants.PUBLIC_API_KEY) + "assets/" + p.ID + "/" + filePath
+	p.PropertyPic = filePath
 
 	var es property.EsUpdate
 	update := property.UpdatePropertyRequest{
