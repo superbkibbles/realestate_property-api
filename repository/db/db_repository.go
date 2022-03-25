@@ -207,6 +207,8 @@ func (db *dbRepository) Get(sort string, asc bool) (property.Properties, rest_er
 	if restErr != nil {
 		return nil, restErr
 	}
+	// fmt.Println("************")
+	// fmt.Println(len(properties))
 
 	return properties, nil
 }

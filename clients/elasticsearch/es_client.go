@@ -171,6 +171,7 @@ func (c *esClient) Get(index string, propertyType string, sort string, asc bool)
 		logger.Error(fmt.Sprintf("error when trying to search documents in index %s", index), err)
 		return nil, err
 	}
+
 	return result, nil
 }
 
