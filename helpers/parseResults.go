@@ -9,7 +9,7 @@ import (
 )
 
 func SearchResultToProperties(result *elastic.SearchResult) (property.Properties, rest_errors.RestErr) {
-	var properties []property.Property
+	var properties property.Properties
 	for _, hit := range result.Hits.Hits {
 		bytes, _ := hit.Source.MarshalJSON()
 		var property property.Property
