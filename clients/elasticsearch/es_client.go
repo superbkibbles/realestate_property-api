@@ -161,10 +161,10 @@ func (c *esClient) Get(index string, propertyType string, sort string, asc bool)
 	// result, err := c.client.Index(index).Type(propertyType).Query(query).Do(ctx)
 	if sort == "" {
 		// result, err = c.client.Search().Index(index).Type(propertyType).Query(query).Size(3).Do(ctx)
-		result, err = c.client.Search().Index(index).Type(propertyType).Query(query).Do(ctx)
+		result, err = c.client.Search().Index(index).Query(query).Do(ctx)
 	} else {
 		// result, err = c.client.Search().Sort(sort, asc).Index(index).Type(propertyType).Query(query).Size(3).Do(ctx)
-		result, err = c.client.Search().Sort(sort, asc).Index(index).Type(propertyType).Query(query).Do(ctx)
+		result, err = c.client.Search().Sort(sort, asc).Index(index).Query(query).Do(ctx)
 	}
 
 	if err != nil {
@@ -180,9 +180,9 @@ func (c *esClient) GetActive(index string, propertyType string, sort string, asc
 	var results *elastic.SearchResult
 	var err error
 	if sort == "" {
-		results, err = c.client.Search().Index(index).Type(propertyType).Query(query).Do(ctx)
+		results, err = c.client.Search().Index(index).Query(query).Do(ctx)
 	} else {
-		results, err = c.client.Search().Sort(sort, asc).Index(index).Type(propertyType).Query(query).Do(ctx)
+		results, err = c.client.Search().Sort(sort, asc).Index(index).Query(query).Do(ctx)
 	}
 	if err != nil {
 		logger.Error(fmt.Sprintf("error when trying to search documents in index %s", index), err)
@@ -199,9 +199,9 @@ func (c *esClient) GetDeactive(index string, propertyType string, sort string, a
 	var err error
 
 	if sort == "" {
-		results, err = c.client.Search().Index(index).Type(propertyType).Query(query).Do(ctx)
+		results, err = c.client.Search().Index(index).Query(query).Do(ctx)
 	} else {
-		results, err = c.client.Search().Sort(sort, asc).Index(index).Type(propertyType).Query(query).Do(ctx)
+		results, err = c.client.Search().Sort(sort, asc).Index(index).Query(query).Do(ctx)
 	}
 	if err != nil {
 		logger.Error(fmt.Sprintf("error when trying to search documents in index %s", index), err)
