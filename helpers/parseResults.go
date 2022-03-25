@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"encoding/json"
+	"fmt"
 
 	elastic "github.com/olivere/elastic/v7"
 	"github.com/superbkibbles/bookstore_utils-go/rest_errors"
@@ -9,8 +10,9 @@ import (
 )
 
 func SearchResultToProperties(result *elastic.SearchResult) (property.Properties, rest_errors.RestErr) {
-	properties := make(property.Properties, result.TotalHits())
-	for i, hit := range result.Hits.Hits {
+	var properties property.Properties
+	for _, hit := range result.Hits.Hits {
+		fmt.Println("here")
 		bytes, _ := hit.Source.MarshalJSON()
 		var property property.Property
 		// if err := json.Unmarshal(bytes, &property); err != nil {
@@ -18,7 +20,7 @@ func SearchResultToProperties(result *elastic.SearchResult) (property.Properties
 		// }
 		json.Unmarshal(bytes, &property)
 		property.ID = hit.Id
-		properties[i] = property
+		properties = append(properties, property)
 	}
 
 	if len(properties) == 0 {
@@ -29,8 +31,8 @@ func SearchResultToProperties(result *elastic.SearchResult) (property.Properties
 }
 
 func SearchResultToTranslatedProperties(result *elastic.SearchResult) (property.TranslateProperties, rest_errors.RestErr) {
-	properties := make(property.TranslateProperties, result.TotalHits())
-	for i, hit := range result.Hits.Hits {
+	var properties property.TranslateProperties
+	for _, hit := range result.Hits.Hits {
 		bytes, _ := hit.Source.MarshalJSON()
 		var property property.TranslateProperty
 		// if err := json.Unmarshal(bytes, &property); err != nil {
@@ -38,7 +40,7 @@ func SearchResultToTranslatedProperties(result *elastic.SearchResult) (property.
 		// }
 		json.Unmarshal(bytes, &property)
 		property.ID = hit.Id
-		properties[i] = property
+		properties = append(properties, property)
 	}
 
 	if len(properties) == 0 {
