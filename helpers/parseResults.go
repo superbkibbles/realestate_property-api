@@ -2,7 +2,6 @@ package helpers
 
 import (
 	"encoding/json"
-	"fmt"
 
 	elastic "github.com/olivere/elastic/v7"
 	"github.com/superbkibbles/bookstore_utils-go/rest_errors"
@@ -30,7 +29,7 @@ func SearchResultToProperties(result *elastic.SearchResult) (property.Properties
 }
 
 func SearchResultToTranslatedProperties(result *elastic.SearchResult) (property.TranslateProperties, rest_errors.RestErr) {
-	properties := make(property.TranslateProperties, result.TotalHits())
+	var properties property.TranslateProperties
 	for i, hit := range result.Hits.Hits {
 		bytes, _ := hit.Source.MarshalJSON()
 		var property property.TranslateProperty
@@ -43,10 +42,7 @@ func SearchResultToTranslatedProperties(result *elastic.SearchResult) (property.
 	}
 
 	if len(properties) == 0 {
-		fmt.Println("Nothing was found!!!!")
-		fmt.Println("Nothing was found!!!!")
-		fmt.Println("Nothing was found!!!!")
-		fmt.Println("Nothing was found!!!!")
+		return nil, rest_errors.NewNotFoundErr("no Property was found with")
 	}
 
 	return properties, nil
