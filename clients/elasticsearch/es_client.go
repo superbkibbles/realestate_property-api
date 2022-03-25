@@ -160,9 +160,11 @@ func (c *esClient) Get(index string, propertyType string, sort string, asc bool)
 	var err error
 	// result, err := c.client.Index(index).Type(propertyType).Query(query).Do(ctx)
 	if sort == "" {
-		result, err = c.client.Search().Index(index).Type(propertyType).Query(query).Size(3).Do(ctx)
+		// result, err = c.client.Search().Index(index).Type(propertyType).Query(query).Size(3).Do(ctx)
+		result, err = c.client.Search().Index(index).Type(propertyType).Query(query).Do(ctx)
 	} else {
-		result, err = c.client.Search().Sort(sort, asc).Index(index).Type(propertyType).Query(query).Size(3).Do(ctx)
+		// result, err = c.client.Search().Sort(sort, asc).Index(index).Type(propertyType).Query(query).Size(3).Do(ctx)
+		result, err = c.client.Search().Sort(sort, asc).Index(index).Type(propertyType).Query(query).Do(ctx)
 	}
 
 	if err != nil {
