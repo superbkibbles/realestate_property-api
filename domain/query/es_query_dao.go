@@ -19,6 +19,6 @@ func (q *EsQuery) Build() elastic.Query {
 		query.Filter(elastic.NewRangeQuery(fRange.Field).From(fRange.From).To(fRange.To))
 	}
 
-	query.Should(equalsQuery...)
+	query.Must(equalsQuery...)
 	return query
 }
