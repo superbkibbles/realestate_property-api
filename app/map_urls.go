@@ -14,4 +14,5 @@ func mapURLS() {
 	router.GET(prefix+"/active", handler.GetActive)                    // Get active properties
 	router.GET(prefix+"/deactive", handler.GetDeactive)                // Get Deactive properties
 	router.POST(prefix+"/:id/translate", handler.Translate)            // translate by id
+	router.GET(prefix+"/:id/translate", handler.GetTranslated)         // translate by id
 }

@@ -26,6 +26,7 @@ type Service interface {
 	GetActive(sort string, asc bool, local string) (property.Properties, rest_errors.RestErr)
 	GetDeactive(sort string, asc bool, local string) (property.Properties, rest_errors.RestErr)
 	Translate(id string, translateProperty property.TranslateProperty, local string) (*property.Property, rest_errors.RestErr)
+	GetTranslated(id string, local string) (*property.TranslateProperty, rest_errors.RestErr)
 }
 
 type service struct {
@@ -76,6 +77,10 @@ func (s *service) Translate(id string, translateProperty property.TranslatePrope
 	}
 
 	return translateProperty.Marshal(p), nil
+}
+
+func (s *service) GetTranslated(id string, local string) (*property.TranslateProperty, rest_errors.RestErr) {
+	return s.dbRepo.GetTranslateById(id, local)
 }
 
 func (s *service) Create(p property.Property) (*property.Property, rest_errors.RestErr) {

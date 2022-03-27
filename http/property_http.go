@@ -24,6 +24,7 @@ type Propertyhandler interface {
 	GetActive(*gin.Context)
 	GetDeactive(*gin.Context)
 	Translate(*gin.Context)
+	GetTranslated(*gin.Context)
 }
 
 type propertyHandler struct {
@@ -175,6 +176,24 @@ func (ph *propertyHandler) GetByID(c *gin.Context) {
 	c.JSON(http.StatusOK, property)
 }
 
+func (ph *propertyHandler) GetTranslated(c *gin.Context) {
+	id := strings.TrimSpace(c.Param("id"))
+	local := c.GetHeader("local")
+	if len(id) == 0 {
+		restErr := rest_errors.NewBadRequestErr("Invalid ID")
+		c.JSON(restErr.Status(), restErr)
+		return
+	}
+
+	property, err := ph.service.GetTranslated(id, local)
+	if err != nil {
+		c.JSON(err.Status(), err)
+		return
+	}
+
+	c.JSON(http.StatusOK, property)
+}
+
 func (ph *propertyHandler) Search(c *gin.Context) {
 	var q query.EsQuery
 	sort := c.Query("sort")
@@ -195,7 +214,7 @@ func (ph *propertyHandler) Search(c *gin.Context) {
 
 	c.JSON(http.StatusOK, properties)
 }
-	
+
 func (ph *propertyHandler) DeleteMedia(c *gin.Context) {
 	propertyID := strings.TrimSpace(c.Param("id"))
 	mediaID := strings.TrimSpace(c.Param("media_id"))
