@@ -191,22 +191,25 @@ func (s *service) UploadMedia(files []*multipart.FileHeader, propertyID string) 
 		var visual property.Visual
 		var video property.Video
 		res, cloudErr := s.cloudRepo.Save(f, propertyID+crypto_utils.GetMd5(uuid.New().String()), p.ID)
-		v := res.Url
-		ext := res.Ext
-		publicID := res.PublicID
 		if err != nil {
 			return cloudErr
 		}
-		if ext == "mp4" || ext == "mov" {
-			video.Url = v
-			video.FileType = ext
-			video.PublicID = publicID
-			videos = append(videos, video)
-		} else {
-			visual.Url = v
-			visual.FileType = ext
-			visual.PublicID = publicID
-			visuals = append(visuals, visual)
+		if res.Url != "" {
+			v := res.Url
+			ext := res.Ext
+			publicID := res.PublicID
+
+			if ext == "mp4" || ext == "mov" {
+				video.Url = v
+				video.FileType = ext
+				video.PublicID = publicID
+				videos = append(videos, video)
+			} else {
+				visual.Url = v
+				visual.FileType = ext
+				visual.PublicID = publicID
+				visuals = append(visuals, visual)
+			}
 		}
 	}
 
