@@ -166,7 +166,7 @@ func (db *dbRepository) GetTranslateById(id string, local string) (*property.Tra
 	results, err := elasticsearch.Client.GetTranslatByID(indexTranslateProperty, typeProperty, id, local)
 	if err != nil {
 		if strings.Contains(err.Error(), "404") {
-			return &property.TranslateProperty{}, nil
+			return nil, rest_errors.NewNotFoundErr("no Property was found with")
 		}
 		return nil, rest_errors.NewInternalServerErr("error when trying to Update Property", errors.New("databse error"))
 	}
