@@ -27,7 +27,10 @@ func StartApplication() {
 	}
 
 	handler = http.NewPropertyHandler(property.NewService(db.NewRepository(), cloudstorage.NewRepository(cld)))
-	router.Use(cors.Default())
+	config := cors.DefaultConfig()
+	config.AllowAllOrigins = true
+	config.AddAllowHeaders("local")
+	router.Use(cors.New(config))
 	mapURLS()
 	// router.Static("assets", "clients/visuals")
 	router.Run(os.Getenv(constants.PORT))
